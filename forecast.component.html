@@ -1,0 +1,205 @@
+<div class="revenues-actuals-container">
+    <div class="revenues-actuals-container-tabs" *ngIf="!dataEntryMode">
+        <div class="revenues-actuals-container-tabs-tab" (click)="selectView(PERIOD_TYPE_OPTIONS.MONTHLY)" [class.active]="chartViewSelected === PERIOD_TYPE_OPTIONS.MONTHLY">Monthly</div>
+        <div class="revenues-actuals-container-tabs-tab" (click)="selectView(PERIOD_TYPE_OPTIONS.QUARTERLY)" [class.active]="chartViewSelected === PERIOD_TYPE_OPTIONS.QUARTERLY">Quarterly</div>
+        <div class="revenues-actuals-container-tabs-tab" (click)="selectView(PERIOD_TYPE_OPTIONS.YEARLY)" [class.active]="chartViewSelected === PERIOD_TYPE_OPTIONS.YEARLY">Yearly</div>
+        <div class="info-box float-right">
+            <a class="" href="assets/sample.xlsx" download style="margin-right:15px;">
+                <i class="fa fa-file-excel-o"></i> <span title="Download Sample File" >Sample Excel</span>
+            </a>
+            <a href="http://success.lean-case.com/knowledge_base/categories/editing-and-uploading-data" target="_blank">
+                <i class="fa fa-question-circle"></i>
+            </a>
+        </div>
+    </div>
+    <div class="revenues-actuals-container-content" [attr.id]="containerId">
+        <div class="revenues-actuals-container-content-holder" [class.displayFlexed]="splitSideBySide">
+            <div class="revenues-actuals-chart" *ngIf="showCharts && !disableCharts" [class.w40]="splitSideBySide">
+                <app-forecast-charts style="width:100%; display:block;" [config]="chartsConfig"></app-forecast-charts>
+            </div>
+            <div class="revenues-actuals-grid float-right" [class.w60]="splitSideBySide && showCharts" [class.w100]="!splitSideBySide && !showCharts"
+                [class.displayFlexed]="splitSideBySide" [class.chartsShown]="showCharts" [class.manualsOptionsShown]="isManual"
+                [class.noMarginBottom]="dataEntryMode">
+                <div class="revenues-actuals-grid-manual-menu">
+                    <div class="chart-msg" [hidden]="!showMsg">{{forecastAlertMsg}}</div>
+                    <div class="revenues-actuals-grid-manual-menu-item-btn" [hidden]="chartViewSelected !== PERIOD_TYPE_OPTIONS.MONTHLY">
+                        <button title="Create Data" (click)="openEditSliderMenu()"><i class="fa fa-bars"></i></button>
+                    </div>
+                    <div class="revenues-actuals-grid-manual-menu-item-btn" [hidden]="chartViewSelected != PERIOD_TYPE_OPTIONS.MONTHLY">
+                        <app-xl-file-ctrl label="" title="Upload File" (xlsContentUpdated)="onXlsFileContentUpdate($event)"></app-xl-file-ctrl>
+                    </div>
+                    <div class="revenues-actuals-grid-manual-menu-item-btn" *ngIf="!dataEntryMode && isManual">
+                        <button title="Save Data" title="Apply Changes" (click)="saveManualData()"><i class="fa fa-floppy-o"></i></button>
+                    </div>
+                    <div class="float-right" *ngIf="!dataEntryMode">
+                        <div class="revenues-actuals-grid-manual-menu-item input-ctrl" [hidden]="editViewSelected === VIEW_OPTIONS.RESULTS" *ngIf="isManual">
+                            <label>Initial Value</label>
+                            <input class="revenue-grid-ctrl" type="number" [(ngModel)]="manualStartValue" />
+                        </div>
+                        <div class="revenues-actuals-grid-manual-menu-item toggle-ctrl">
+                            <label>Editing</label>
+                            <ui-switch color="#106CC8" [(ngModel)]="isManual" (change)="onManualModeChange()"></ui-switch>
+                        </div>
+                        <div class="revenues-actuals-grid-manual-menu-item toggle-ctrl" *ngIf="!disableCharts">
+                            <label>Chart</label>
+                            <ui-switch color="#106CC8" [(ngModel)]="showCharts" (change)="onShowChartsModeChange()"></ui-switch>
+                        </div>
+                        <div class="revenues-actuals-grid-manual-menu-item input-ctrl">
+                            <label>View</label>
+                            <select class="revenue-grid-ctrl" [(ngModel)]="editViewSelected" (change)="onEditDataViewChange()">
+                            <option *ngFor="let item of editViewOptions" [ngValue]="item.value">{{item.label}}</option>
+                        </select>
+                        </div>
+                    </div>
+                </div>
+                <table [hidden]="chartViewSelected !== PERIOD_TYPE_OPTIONS.MONTHLY" class="w12" [class.tableLayoutFixed]="!isSafariBrowser">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th><span [hidden]="enableAltLabels">JAN</span><span [hidden]="!enableAltLabels">M1</span></th>
+                            <th><span [hidden]="enableAltLabels">FEB</span><span [hidden]="!enableAltLabels">M2</span></th>
+                            <th><span [hidden]="enableAltLabels">MAR</span><span [hidden]="!enableAltLabels">M3</span></th>
+                            <th><span [hidden]="enableAltLabels">APR</span><span [hidden]="!enableAltLabels">M4</span></th>
+                            <th><span [hidden]="enableAltLabels">MAY</span><span [hidden]="!enableAltLabels">M5</span></th>
+                            <th><span [hidden]="enableAltLabels">JUN</span><span [hidden]="!enableAltLabels">M6</span></th>
+                            <th><span [hidden]="enableAltLabels">JUL</span><span [hidden]="!enableAltLabels">M7</span></th>
+                            <th><span [hidden]="enableAltLabels">AUG</span><span [hidden]="!enableAltLabels">M8</span></th>
+                            <th><span [hidden]="enableAltLabels">SEP</span><span [hidden]="!enableAltLabels">M9</span></th>
+                            <th><span [hidden]="enableAltLabels">OCT</span><span [hidden]="!enableAltLabels">M10</span></th>
+                            <th><span [hidden]="enableAltLabels">NOV</span><span [hidden]="!enableAltLabels">M11</span></th>
+                            <th><span [hidden]="enableAltLabels">DEC</span><span [hidden]="!enableAltLabels">M12</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="empty-row">
+                            <td colspan="13" *ngIf="rows.length == 0 && isManual == false"> No Records for now</td>
+                        </tr>
+                        <tr *ngFor="let year of forecastYears">
+                            <td>
+                                <span [hidden]="enableAltLabels">{{year.YEAR}}</span><span [hidden]="!enableAltLabels">{{year.ALT_LABEL}}</span>
+                            </td>
+                            <td *ngFor="let model of year.MONTHS">
+                                <span *ngIf="!isManual">
+                                <span [hidden]="viewSelected !== VIEW_OPTIONS.RESULTS">{{model.VALUE | currencyDelimitedWithComma}}</span>
+                                <span [hidden]="viewSelected !== VIEW_OPTIONS.INCREMENTS">{{model.INCREMENT | currencyDelimitedWithComma}}</span>
+                                <span [hidden]="viewSelected !== VIEW_OPTIONS.PERCENT">{{model.INCREMENT_PERCENT}} %</span>
+                                </span>
+                                <input type="number" *ngIf="isManual && editViewSelected === VIEW_OPTIONS.RESULTS" [(ngModel)]="model.MANUAL_VALUE" step="0.01"
+                                />
+                                <input type="number" *ngIf="isManual && editViewSelected === VIEW_OPTIONS.INCREMENTS" [(ngModel)]="model.MANUAL_INCREMENT"
+                                    step="0.01" />
+                                <input type="number" *ngIf="isManual && editViewSelected === VIEW_OPTIONS.PERCENT" [(ngModel)]="model.MANUAL_INCREMENT_PERCENT"
+                                    step="0.01" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table [hidden]="chartViewSelected !== PERIOD_TYPE_OPTIONS.QUARTERLY" class="w4" [class.tableLayoutFixed]="!isSafariBrowser">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Q1 <span [hidden]="enableAltLabels">JAN - MAR</span></th>
+                            <th>Q2 <span [hidden]="enableAltLabels">APR - JUN</span></th>
+                            <th>Q3 <span [hidden]="enableAltLabels">JUL - SEP</span></th>
+                            <th>Q4 <span [hidden]="enableAltLabels">OCT - DEC</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="empty-row">
+                            <td colspan="13" *ngIf="rows.length == 0 && isManual == false"> No Records for now</td>
+                        </tr>
+                        <tr *ngFor="let year of forecastYears">
+                            <td><span [hidden]="enableAltLabels">{{year.YEAR}}</span><span [hidden]="!enableAltLabels">{{year.ALT_LABEL}}</span></td>
+                            <td *ngFor="let model of year.QUARTERS">
+                                <span *ngIf="!isManual">
+                                <span [hidden]="viewSelected !== VIEW_OPTIONS.RESULTS">{{model.VALUE | currencyDelimitedWithComma}}</span>
+                                <span [hidden]="viewSelected !== VIEW_OPTIONS.INCREMENTS">{{model.INCREMENT | currencyDelimitedWithComma}}</span>
+                                <span [hidden]="viewSelected !== VIEW_OPTIONS.PERCENT">{{model.INCREMENT_PERCENT}} %</span>
+                                </span>
+                                <span *ngIf="isManual">
+                                    <input type="number" [hidden]="editViewSelected !== VIEW_OPTIONS.RESULTS" [(ngModel)]="model.MANUAL_VALUE" step="0.01" />
+                                    <!-- <input type="number" [hidden]="editViewSelected !== VIEW_OPTIONS.INCREMENTS" [(ngModel)]="model.MANUAL_INCREMENT" step="0.01" /> -->
+                            </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table [hidden]="chartViewSelected !== PERIOD_TYPE_OPTIONS.YEARLY" class="w1" [class.tableLayoutFixed]="!isSafariBrowser">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="empty-row">
+                            <td colspan="13" *ngIf="rows.length == 0 && isManual == false"> No Records for now</td>
+                        </tr>
+                        <tr *ngFor="let year of forecastYears">
+                            <td><span [hidden]="enableAltLabels">{{year.YEAR}}</span><span [hidden]="!enableAltLabels">{{year.ALT_LABEL}}</span></td>
+                            <td>
+                                <span *ngIf="!isManual">
+                                <span [hidden]="viewSelected !== VIEW_OPTIONS.RESULTS">{{year.VALUE | currencyDelimitedWithComma}}</span>
+                                <span [hidden]="viewSelected !== VIEW_OPTIONS.INCREMENTS">{{year.INCREMENT | currencyDelimitedWithComma}}</span>
+                                <span [hidden]="viewSelected !== VIEW_OPTIONS.PERCENT">{{year.INCREMENT_PERCENT}} %</span>
+                                </span>
+                                <span *ngIf="isManual">
+                                    <input type="number" [hidden]="editViewSelected !== VIEW_OPTIONS.RESULTS" [(ngModel)]="year.MANUAL_VALUE" step="0.01" />
+                                    <!-- <input type="number" [hidden]="editViewSelected !== VIEW_OPTIONS.INCREMENTS" [(ngModel)]="year.MANUAL_INCREMENT" step="0.01" /> -->
+                            </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="revenues-actuals-container-slider-overlay" [hidden]="!showSliderMenu"></div>
+    <div class="revenues-actuals-container-slider" [class.in]="showSliderMenu">
+        <div class="revenues-actuals-container-slider-inner">
+            <div class="revenues-actuals-container-slider-close" (click)="showSliderMenu = false">
+                <i class="fa fa-close"></i>
+            </div>
+            <div class="revenues-actuals-container-slider-inner-items-holder">
+                <div class="revenues-actuals-container-slider-inner-item">
+                    <label>Enter Intial Value</label>
+                    <input class="revenue-ctrl" [(ngModel)]="manualStartValue" type="number" title="Enter Initial Value" />
+                </div>
+                <div class="revenues-actuals-container-slider-inner-item">
+                    <label>Select Growth Type</label>
+                    <select class="revenue-ctrl" [(ngModel)]="manualGrowthType" title="Select Growth Type">
+                            <option *ngFor="let item of growthTypeOptions" [ngValue]="item.value">{{item.label}}</option>
+                        </select>
+                </div>
+                <div class="revenues-actuals-container-slider-inner-item">
+                    <label>Select Growth Value</label>
+                    <input class="revenue-ctrl" [(ngModel)]="manualGrowth" type="number" title="Enter Growth Value" />
+                </div>
+                <div class="revenues-actuals-container-slider-inner-item">
+                    <label>Apply across</label>
+                    <select class="revenue-ctrl" [(ngModel)]="manualApplyAcross" title="Select Growth Period">
+                        <option *ngFor="let item of growthPeriodOptions" [ngValue]="item.value">{{item.label}}</option>
+                    </select>
+                </div>
+                <div class="revenues-actuals-container-slider-inner-item">
+                    <label>Enter Start Date (MM/YYYY)</label>
+                    <input class="revenue-ctrl w50" (change)="revertManualOptionYear()" [(ngModel)]="manualStartMonthValue" min="1" max="12"
+                        type="number" title="Enter Start Month" />
+                    <span>/</span>
+                    <input class="revenue-ctrl w50" (change)="revertManualOptionYear()" [(ngModel)]="manualStartYearValue" type="number" title="Enter Start Year"
+                    />
+                </div>
+                <div class="revenues-actuals-container-slider-inner-item">
+                    <label>Enter End Date(MM/YYYY)</label>
+                    <input class="revenue-ctrl w50" (change)="revertManualOptionYear()" [(ngModel)]="manualEndMonthValue" min="1" max="12" type="number"
+                        title="Enter End Month" />
+                    <span>/</span>
+                    <input class="revenue-ctrl w50" (change)="revertManualOptionYear()" [(ngModel)]="manualEndYearValue" type="number" title="Enter End Year"
+                    />
+                </div>
+                <button class="btn btn-primary revenue-ctrl" *ngIf="!dataEntryMode" (click)="applyManualProps()">Apply</button>
+                <button class="btn btn-primary revenue-ctrl" *ngIf="dataEntryMode" (click)="applyManualPropsForDataEntryMode()">Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
